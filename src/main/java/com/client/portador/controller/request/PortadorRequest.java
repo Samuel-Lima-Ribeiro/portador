@@ -5,9 +5,9 @@ import java.util.UUID;
 public record PortadorRequest(
         UUID clientId,
         UUID creditAnalysisId,
-        BankAccount bankAccount) {
+        BankAccountRequest bankAccount) {
 
-    public record BankAccount(
+    public record BankAccountRequest(
             // Verificar se são string ou números
             String account,
             String agency,

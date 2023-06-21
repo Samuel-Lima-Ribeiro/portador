@@ -5,6 +5,7 @@ import java.util.UUID;
 public record CreditAnalysisDto(
         UUID id,
         UUID clientId,
-        Double approvedLimit
+        Double approvedLimit,
+        Boolean approved
 ) {
 }
