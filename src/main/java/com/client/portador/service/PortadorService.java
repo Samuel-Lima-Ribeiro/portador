@@ -9,6 +9,7 @@ import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
 import com.client.portador.mapper.PortadorEntityMapper;
 import com.client.portador.mapper.PortadorMapper;
+import com.client.portador.mapper.PortadorResponseMapper;
 import com.client.portador.model.Portador;
 import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.PortadorEntity;
@@ -23,6 +24,7 @@ public class PortadorService {
     private final PortadorRepository portadorRepository;
     private final PortadorMapper portadorMapper;
     private final PortadorEntityMapper portadorEntityMapper;
+    private final PortadorResponseMapper portadorResponseMapper;
 
     public PortadorResponse criandoPortador(PortadorRequest portadorRequest) {
         // aq
@@ -47,7 +49,7 @@ public class PortadorService {
         final PortadorEntity portadorSalvado = portadorRepository.save(portadorEntity);
         System.out.println("salvado " + portadorSalvado);
 
-        return null;
+        return portadorResponseMapper.from(portadorSalvado);
     }
 
     public Double checarAnaliseCredito(PortadorRequest portador) {

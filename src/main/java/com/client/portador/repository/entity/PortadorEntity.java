@@ -1,8 +1,11 @@
 package com.client.portador.repository.entity;
 
+import com.client.portador.utils.Status;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -20,7 +23,8 @@ public class PortadorEntity {
     @Id
     @Column(name = "id_portador")
     UUID id;
-    String status;
+    @Enumerated(EnumType.STRING)
+    Status status;
     @Column(name = "limite")
     Double limit;
 
@@ -38,7 +42,7 @@ public class PortadorEntity {
     private PortadorEntity() {
     }
 
-    public PortadorEntity(String status, Double limit, BankAccountEntity bankAccount) {
+    public PortadorEntity(Status status, Double limit, BankAccountEntity bankAccount) {
         this.id = UUID.randomUUID();
         this.status = status;
         this.limit = limit;
@@ -55,7 +59,7 @@ public class PortadorEntity {
         return id;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
@@ -71,7 +75,7 @@ public class PortadorEntity {
         return createdAt;
     }
 
-    public LocalDateTime getUpdateAt() {
+    public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
 }

@@ -1,14 +1,15 @@
 package com.client.portador.model;
 
+import com.client.portador.utils.Status;
 import lombok.Builder;
 
 public record Portador(
-        String status,
+        Status status,
         Double limit,
         BankAccount bankAccount
 ) {
     @Builder(toBuilder = true)
-    public Portador(String status, Double limit, BankAccount bankAccount) {
+    public Portador(Status status, Double limit, BankAccount bankAccount) {
         this.status = status;
         this.limit = limit;
         this.bankAccount = bankAccount;
@@ -16,7 +17,7 @@ public record Portador(
 
     public Portador updateLimiteFrom(Double limit) {
         return this.toBuilder()
-                .status("ativo")
+                .status(Status.ATIVO)
                 .limit(limit).build();
     }
 }

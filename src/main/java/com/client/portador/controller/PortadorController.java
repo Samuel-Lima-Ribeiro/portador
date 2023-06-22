@@ -21,7 +21,6 @@ public class PortadorController {
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     public PortadorResponse createPortador(@RequestBody PortadorRequest portadorRequest) {
-        portadorService.criandoPortador(portadorRequest);
-        return null;
+        return portadorService.criandoPortador(portadorRequest);
     }
 }
