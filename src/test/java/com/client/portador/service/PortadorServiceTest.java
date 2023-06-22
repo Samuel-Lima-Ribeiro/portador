@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import com.client.portador.apicreditanalysis.ApiCreditAnalysis;
 import com.client.portador.apicreditanalysis.dto.CreditAnalysisDto;
 import com.client.portador.controller.request.PortadorRequest;
+import com.client.portador.controller.response.PortadorResponse;
+import com.client.portador.exception.CardHolderAlreadyExistException;
 import com.client.portador.exception.ClientInvalidException;
 import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
@@ -18,6 +20,11 @@ import com.client.portador.mapper.PortadorMapperImpl;
 import com.client.portador.mapper.PortadorResponseMapper;
 import com.client.portador.mapper.PortadorResponseMapperImpl;
 import com.client.portador.repository.PortadorRepository;
+import com.client.portador.repository.entity.BankAccountEntity;
+import com.client.portador.repository.entity.PortadorEntity;
+import com.client.portador.utils.Status;
+import jakarta.persistence.Entity;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -29,6 +36,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -47,6 +56,8 @@ class PortadorServiceTest {
     private PortadorService portadorService;
     @Captor
     private ArgumentCaptor<UUID> creditAnalysisIdArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<PortadorEntity> portadorEntityArgumentCaptor;
 
     // cenario baum
     public static CreditAnalysisDto creditAnalysisDtoFactory() {
@@ -66,6 +77,20 @@ class PortadorServiceTest {
                         .account("111111-1")
                         .agency("1111")
                         .bankCode("123").build()).build();
+    }
+
+    public static PortadorEntity portadorEntityFactory() {
+        return PortadorEntity.builder()
+                .status(Status.ATIVO)
+                .limit(100.00)
+                .bankAccount(BankAccountEntity.builder()
+                        .account("111111-1")
+                        .agency("1111")
+                        .bankCode("111")
+                        .build())
+                .clientId(UUID.fromString("93e6b252-b810-427c-a489-58760ab51f97"))
+                .creditAnalysisId(UUID.fromString("20260876-eead-4bb0-8ec6-8f9d0f2596eb"))
+                .build();
     }
 
     @Test
@@ -114,5 +139,42 @@ class PortadorServiceTest {
 
         assertEquals(portadorRequest.creditAnalysisId() ,creditAnalysisIdArgumentCaptor.getValue());
         assertEquals("Análise de Crédito do id %s não aprovada".formatted(portadorRequest.creditAnalysisId()) ,exception.getMessage());
+    }
+
+    @Test
+    void deve_lancar_cardHolderAlreadyExistException_ao_tentar_cadastrar_por_cliente_id_ja_existente() {
+        final PortadorRequest portadorRequest = portadorRequestFactory();
+        final CreditAnalysisDto creditAnalysisDto = creditAnalysisDtoFactory();
+        final PortadorEntity portadorEntityFactory = portadorEntityFactory();
+
+        when(apiCreditAnalysis.getCreditAnalysis(creditAnalysisIdArgumentCaptor.capture())).thenReturn(creditAnalysisDto);
+        when(portadorRepository.save(portadorEntityArgumentCaptor.capture())).thenThrow(DuplicateKeyException.class);
+
+        final CardHolderAlreadyExistException exception = assertThrows(CardHolderAlreadyExistException.class , () ->
+                portadorService.criarPortador(portadorRequest));
+
+        assertEquals("Portador já cadastrado, verifique os dados enviados para o registro" , exception.getMessage());
+    }
+
+    // da pra melhorar
+    @Test
+    void deve_criar_portador() {
+        final PortadorRequest portadorRequest = portadorRequestFactory();
+        final CreditAnalysisDto creditAnalysisDto = creditAnalysisDtoFactory();
+        final PortadorEntity portadorEntityFactory = portadorEntityFactory();
+
+        when(apiCreditAnalysis.getCreditAnalysis(creditAnalysisIdArgumentCaptor.capture())).thenReturn(creditAnalysisDto);
+        when(portadorRepository.save(portadorEntityArgumentCaptor.capture())).thenReturn(portadorEntityFactory);
+
+        final PortadorResponse portadorResponse = portadorService.criarPortador(portadorRequest);
+
+        final PortadorEntity portadorEntity = portadorEntityArgumentCaptor.getValue();
+        assertEquals(portadorRequest.creditAnalysisId(), creditAnalysisIdArgumentCaptor.getValue());
+
+        //
+
+        assertEquals(creditAnalysisDto.approvedLimit() , portadorEntity.getLimit());
+        assertEquals(portadorRequest.creditAnalysisId() , portadorEntity.getCreditAnalysisId());
+        assertEquals(portadorRequest.clientId() , portadorEntity.getClientId());
     }
 }

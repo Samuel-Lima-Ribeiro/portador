@@ -12,6 +12,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -46,6 +47,7 @@ public class PortadorEntity {
     private PortadorEntity() {
     }
 
+    @Builder(toBuilder = true)
     public PortadorEntity(Status status, Double limit, UUID clientId, UUID creditAnalysisId, BankAccountEntity bankAccount) {
         this.id = UUID.randomUUID();
         this.status = status;

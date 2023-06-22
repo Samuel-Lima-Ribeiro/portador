@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Builder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -29,6 +30,7 @@ public class BankAccountEntity {
     private BankAccountEntity() {
     }
 
+    @Builder(toBuilder = true)
     public BankAccountEntity(String account, String agency, String bankCode) {
         this.id = UUID.randomUUID();
         this.account = account;
