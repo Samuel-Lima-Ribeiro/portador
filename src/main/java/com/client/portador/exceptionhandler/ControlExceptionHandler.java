@@ -1,8 +1,10 @@
 package com.client.portador.exceptionhandler;
 
+import com.client.portador.exception.CardHolderAlreadyExistException;
 import com.client.portador.exception.ClientInvalidException;
 import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import org.springframework.http.HttpStatus;
@@ -19,7 +21,7 @@ public class ControlExceptionHandler {
     @ExceptionHandler(CreditAnalysisNotFoundException.class)
     public ProblemDetail creditAnalysisNotFoundHandleException(CreditAnalysisNotFoundException exception) {
         final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        problemDetail.setTitle("Credit Analysis not found");
+        problemDetail.setTitle("Análise de Crédito não encontrada");
         problemDetail.setType(URI.create(NOT_FOUND));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
@@ -30,7 +32,7 @@ public class ControlExceptionHandler {
     public ProblemDetail clientInvalidHandleException(ClientInvalidException exception) {
         final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         // melhorar o titulo
-        problemDetail.setTitle("Client Invalid");
+        problemDetail.setTitle("Cliente inválido");
         problemDetail.setType(URI.create(NOT_FOUND));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
@@ -41,11 +43,30 @@ public class ControlExceptionHandler {
     @ExceptionHandler(CreditAnalysisDeniedException.class)
     public ProblemDetail creditAnalysisDeniedHandleException(CreditAnalysisDeniedException exception) {
         final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        // melhorar o titulo
-        problemDetail.setTitle("Credit Analysis Invalid");
+        problemDetail.setTitle("Análise de Crédito negada");
         problemDetail.setType(URI.create(NOT_FOUND));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CardHolderAlreadyExistException.class)
+    public ProblemDetail cardHolderAlreadyExistHandleException(CardHolderAlreadyExistException exception) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        problemDetail.setTitle("Portador já existe");
+        problemDetail.setType(URI.create("https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/422"));
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getMessage());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ProblemDetail constraintViolationExceptionHandle(ConstraintViolationException exception) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        // adicionar titulo
+        problemDetail.setType(URI.create("https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400"));
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getConstraintViolations().toString());
         return problemDetail;
     }
 }

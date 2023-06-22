@@ -4,6 +4,7 @@ import com.client.portador.apicreditanalysis.ApiCreditAnalysis;
 import com.client.portador.apicreditanalysis.dto.CreditAnalysisDto;
 import com.client.portador.controller.request.PortadorRequest;
 import com.client.portador.controller.response.PortadorResponse;
+import com.client.portador.exception.CardHolderAlreadyExistException;
 import com.client.portador.exception.ClientInvalidException;
 import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
@@ -14,6 +15,7 @@ import com.client.portador.model.Portador;
 import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.PortadorEntity;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -26,43 +28,44 @@ public class PortadorService {
     private final PortadorEntityMapper portadorEntityMapper;
     private final PortadorResponseMapper portadorResponseMapper;
 
-    public PortadorResponse criandoPortador(PortadorRequest portadorRequest) {
-        // aq
-        System.out.println(portadorRequest);
+    public PortadorResponse criarPortador(PortadorRequest portadorRequest) {
+
         final Double limite = checarAnaliseCredito(portadorRequest);
-        //aq
-        System.out.println(limite);
-        // mapear agora, envio o request junto com o limit
+
         final Portador portador = portadorMapper.from(portadorRequest);
-        System.out.println(portador + " ele ");
 
-        // atualizar
+        // talvez método para criar ou fazer um build, to fazendo active no model ?????
+        // mesmo esquema da analise, chamo método, retorno portador
         final Portador portadorLimiteUpdate = portador.updateLimiteFrom(limite);
-        System.out.println("Atualizado " + portadorLimiteUpdate);
 
-        // Salvar
         final PortadorEntity portadorEntity = portadorEntityMapper.from(portadorLimiteUpdate);
-        System.out.println("Entity " + portadorEntity);
 
-
-        //        salvado
-        final PortadorEntity portadorSalvado = portadorRepository.save(portadorEntity);
-        System.out.println("salvado " + portadorSalvado);
+        final PortadorEntity portadorSalvado = savePortador(portadorEntity);
 
         return portadorResponseMapper.from(portadorSalvado);
+    }
+
+    public PortadorEntity savePortador(PortadorEntity portadorEntity) {
+        final PortadorEntity portadorSalvado;
+        try {
+            portadorSalvado = portadorRepository.save(portadorEntity);
+        } catch (DataIntegrityViolationException exception) {
+            throw new CardHolderAlreadyExistException("Portador já cadastrado, verifique os dados enviados para o registro");
+        }
+        return portadorSalvado;
     }
 
     public Double checarAnaliseCredito(PortadorRequest portador) {
         final CreditAnalysisDto dto = apiCreditAnalysis.getCreditAnalysis(portador.creditAnalysisId());
 
         if (dto.id() == null) {
-            throw new CreditAnalysisNotFoundException("Credit Analysis not found by id %s".formatted(portador.creditAnalysisId()));
+            throw new CreditAnalysisNotFoundException("Análise de Crédito não encontrada pelo id %s".formatted(portador.creditAnalysisId()));
         } else if (!dto.clientId().equals(portador.clientId())) {
-            // falar que o idClient nao corresponde ao id mostrado da analise
-            throw new ClientInvalidException("Invalid client by id %s".formatted(portador.clientId()));
+            throw new ClientInvalidException("Cliente do id %s não corresponde ao cliente da Análise".formatted(portador.clientId()));
         } else if (!dto.approved()) {
-            //melhorar isso
-            throw new CreditAnalysisDeniedException("Credit Analysis denied by id %s".formatted(portador.creditAnalysisId()));
+            // arrumar e mandar 422
+            // mudar de negada para nao aprovada ???? emsma coisa??
+            throw new CreditAnalysisDeniedException("Análise de Crédito do id %s não aprovada".formatted(portador.creditAnalysisId()));
         }
         return dto.approvedLimit();
     }

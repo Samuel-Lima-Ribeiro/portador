@@ -31,7 +31,11 @@ public class PortadorEntity {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "conta_bancaria_id", referencedColumnName = "id")
     BankAccountEntity bankAccount;
+    @Column(name = "cliente_id")
+    UUID clientId;
 
+    @Column(name = "analise_credito_id")
+    UUID creditAnalysisId;
     @CreationTimestamp
     @Column(name = "createdAt")
     LocalDateTime createdAt;
@@ -42,9 +46,11 @@ public class PortadorEntity {
     private PortadorEntity() {
     }
 
-    public PortadorEntity(Status status, Double limit, BankAccountEntity bankAccount) {
+    public PortadorEntity(Status status, Double limit, UUID clientId, UUID creditAnalysisId, BankAccountEntity bankAccount) {
         this.id = UUID.randomUUID();
         this.status = status;
+        this.clientId = clientId;
+        this.creditAnalysisId = creditAnalysisId;
         this.limit = limit;
         this.bankAccount = bankAccount;
     }
@@ -77,5 +83,13 @@ public class PortadorEntity {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public UUID getClientId() {
+        return clientId;
+    }
+
+    public UUID getCreditAnalysisId() {
+        return creditAnalysisId;
     }
 }
