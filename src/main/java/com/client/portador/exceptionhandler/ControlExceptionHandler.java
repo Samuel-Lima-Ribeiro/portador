@@ -17,6 +17,7 @@ public class ControlExceptionHandler {
 
     public static final String TIMESTAMP = "timestamp";
     public static final String NOT_FOUND = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/404";
+    public static final String UNPROCESSABLE_ENTITY = "https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/422";
 
     @ExceptionHandler(CreditAnalysisNotFoundException.class)
     public ProblemDetail creditAnalysisNotFoundHandleException(CreditAnalysisNotFoundException exception) {
@@ -30,21 +31,19 @@ public class ControlExceptionHandler {
 
     @ExceptionHandler(ClientInvalidException.class)
     public ProblemDetail clientInvalidHandleException(ClientInvalidException exception) {
-        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        // melhorar o titulo
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         problemDetail.setTitle("Cliente inválido");
-        problemDetail.setType(URI.create(NOT_FOUND));
+        problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
         return problemDetail;
     }
 
-    // talvez invalida no lugar de negada?
     @ExceptionHandler(CreditAnalysisDeniedException.class)
     public ProblemDetail creditAnalysisDeniedHandleException(CreditAnalysisDeniedException exception) {
-        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         problemDetail.setTitle("Análise de Crédito negada");
-        problemDetail.setType(URI.create(NOT_FOUND));
+        problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
         return problemDetail;
@@ -54,7 +53,7 @@ public class ControlExceptionHandler {
     public ProblemDetail cardHolderAlreadyExistHandleException(CardHolderAlreadyExistException exception) {
         final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         problemDetail.setTitle("Portador já existe");
-        problemDetail.setType(URI.create("https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/422"));
+        problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
         return problemDetail;
@@ -63,7 +62,6 @@ public class ControlExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ProblemDetail constraintViolationExceptionHandle(ConstraintViolationException exception) {
         final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        // adicionar titulo
         problemDetail.setType(URI.create("https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400"));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getConstraintViolations().toString());

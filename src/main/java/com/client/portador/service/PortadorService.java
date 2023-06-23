@@ -29,13 +29,10 @@ public class PortadorService {
     private final PortadorResponseMapper portadorResponseMapper;
 
     public PortadorResponse criarPortador(PortadorRequest portadorRequest) {
-
         final Double limite = checarAnaliseCredito(portadorRequest);
 
         final Portador portador = portadorMapper.from(portadorRequest);
 
-        // talvez método para criar ou fazer um build, to fazendo active no model ?????
-        // mesmo esquema da analise, chamo método, retorno portador
         final Portador portadorLimiteUpdate = portador.updateLimiteFrom(limite);
 
         final PortadorEntity portadorEntity = portadorEntityMapper.from(portadorLimiteUpdate);
@@ -63,9 +60,8 @@ public class PortadorService {
         } else if (!dto.clientId().equals(portador.clientId())) {
             throw new ClientInvalidException("Cliente do id %s não corresponde ao cliente da Análise".formatted(portador.clientId()));
         } else if (!dto.approved()) {
-            // arrumar e mandar 422
-            // mudar de negada para nao aprovada ???? emsma coisa??
-            throw new CreditAnalysisDeniedException("Análise de Crédito do id %s não aprovada".formatted(portador.creditAnalysisId()));
+            throw new CreditAnalysisDeniedException(("Análise de Crédito do id %s não aprovada"
+                    + ", não há limite para calculo").formatted(portador.creditAnalysisId()));
         }
         return dto.approvedLimit();
     }

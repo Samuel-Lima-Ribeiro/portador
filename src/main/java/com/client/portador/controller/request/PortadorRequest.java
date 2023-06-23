@@ -13,7 +13,6 @@ public record PortadorRequest(
     }
 
     public record BankAccountRequest(
-            // Verificar se são string ou números
             String account,
             String agency,
             String bankCode

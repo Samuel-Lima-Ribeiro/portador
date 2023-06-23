@@ -2,6 +2,7 @@ package com.client.portador.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +37,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,7 +59,6 @@ class PortadorServiceTest {
     @Captor
     private ArgumentCaptor<PortadorEntity> portadorEntityArgumentCaptor;
 
-    // cenario baum
     public static CreditAnalysisDto creditAnalysisDtoFactory() {
         return CreditAnalysisDto.builder()
                 .id(UUID.fromString("20260876-eead-4bb0-8ec6-8f9d0f2596eb"))
@@ -138,14 +137,13 @@ class PortadorServiceTest {
                 ,() -> portadorService.criarPortador(portadorRequest));
 
         assertEquals(portadorRequest.creditAnalysisId() ,creditAnalysisIdArgumentCaptor.getValue());
-        assertEquals("Análise de Crédito do id %s não aprovada".formatted(portadorRequest.creditAnalysisId()) ,exception.getMessage());
+        assertEquals("Análise de Crédito do id %s não aprovada, não há limite para calculo".formatted(portadorRequest.creditAnalysisId()) ,exception.getMessage());
     }
 
     @Test
     void deve_lancar_cardHolderAlreadyExistException_ao_tentar_cadastrar_por_cliente_id_ja_existente() {
         final PortadorRequest portadorRequest = portadorRequestFactory();
         final CreditAnalysisDto creditAnalysisDto = creditAnalysisDtoFactory();
-        final PortadorEntity portadorEntityFactory = portadorEntityFactory();
 
         when(apiCreditAnalysis.getCreditAnalysis(creditAnalysisIdArgumentCaptor.capture())).thenReturn(creditAnalysisDto);
         when(portadorRepository.save(portadorEntityArgumentCaptor.capture())).thenThrow(DuplicateKeyException.class);
@@ -156,7 +154,6 @@ class PortadorServiceTest {
         assertEquals("Portador já cadastrado, verifique os dados enviados para o registro" , exception.getMessage());
     }
 
-    // da pra melhorar
     @Test
     void deve_criar_portador() {
         final PortadorRequest portadorRequest = portadorRequestFactory();
@@ -168,10 +165,10 @@ class PortadorServiceTest {
 
         final PortadorResponse portadorResponse = portadorService.criarPortador(portadorRequest);
 
+        assertNotNull(portadorResponse);
+
         final PortadorEntity portadorEntity = portadorEntityArgumentCaptor.getValue();
         assertEquals(portadorRequest.creditAnalysisId(), creditAnalysisIdArgumentCaptor.getValue());
-
-        //
 
         assertEquals(creditAnalysisDto.approvedLimit() , portadorEntity.getLimit());
         assertEquals(portadorRequest.creditAnalysisId() , portadorEntity.getCreditAnalysisId());

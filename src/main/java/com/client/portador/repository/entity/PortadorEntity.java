@@ -24,22 +24,27 @@ public class PortadorEntity {
     @Id
     @Column(name = "id_portador")
     UUID id;
+
     @Enumerated(EnumType.STRING)
     Status status;
+
     @Column(name = "limite")
     Double limit;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "conta_bancaria_id", referencedColumnName = "id")
     BankAccountEntity bankAccount;
+
     @Column(name = "cliente_id")
     UUID clientId;
 
     @Column(name = "analise_credito_id")
     UUID creditAnalysisId;
+
     @CreationTimestamp
     @Column(name = "createdAt")
     LocalDateTime createdAt;
+
     @UpdateTimestamp
     @Column(name = "updatedAt")
     LocalDateTime updatedAt;
