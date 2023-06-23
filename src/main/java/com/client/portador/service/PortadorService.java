@@ -14,6 +14,9 @@ import com.client.portador.mapper.PortadorResponseMapper;
 import com.client.portador.model.Portador;
 import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.PortadorEntity;
+import com.client.portador.utils.Status;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -64,5 +67,19 @@ public class PortadorService {
                     + ", não há limite para calculo").formatted(portador.creditAnalysisId()));
         }
         return dto.approvedLimit();
+    }
+
+    public List<PortadorResponse> getAllPortadores(Status status) {
+        final List<PortadorEntity> portadorEntities;
+
+        if (status != null) {
+            portadorEntities = portadorRepository.getAllPortadoresByStatus(status);
+        } else {
+            portadorEntities = portadorRepository.findAll();
+        }
+
+        return portadorEntities.stream()
+                .map(portadorResponseMapper::from)
+                .collect(Collectors.toList());
     }
 }
