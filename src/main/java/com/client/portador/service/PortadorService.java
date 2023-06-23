@@ -69,7 +69,7 @@ public class PortadorService {
         return dto.approvedLimit();
     }
 
-    public List<PortadorResponse> getAllPortadores(Status status) {
+    public List<PortadorResponse> getAllPortadoresBy(Status status) {
         final List<PortadorEntity> portadorEntities;
 
         if (status != null) {

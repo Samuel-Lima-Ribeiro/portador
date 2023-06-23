@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.client.portador.apicreditanalysis.ApiCreditAnalysis;
@@ -25,6 +26,7 @@ import com.client.portador.repository.entity.BankAccountEntity;
 import com.client.portador.repository.entity.PortadorEntity;
 import com.client.portador.utils.Status;
 import jakarta.persistence.Entity;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayNameGeneration;
@@ -58,6 +60,8 @@ class PortadorServiceTest {
     private ArgumentCaptor<UUID> creditAnalysisIdArgumentCaptor;
     @Captor
     private ArgumentCaptor<PortadorEntity> portadorEntityArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<Status> statusArgumentCaptor;
 
     public static CreditAnalysisDto creditAnalysisDtoFactory() {
         return CreditAnalysisDto.builder()
@@ -173,5 +177,29 @@ class PortadorServiceTest {
         assertEquals(creditAnalysisDto.approvedLimit() , portadorEntity.getLimit());
         assertEquals(portadorRequest.creditAnalysisId() , portadorEntity.getCreditAnalysisId());
         assertEquals(portadorRequest.clientId() , portadorEntity.getClientId());
+    }
+
+    @Test
+    void deve_retornar_uma_lista_de_todos_os_portadores_quando_status_for_null() {
+        final PortadorEntity entity = portadorEntityFactory();
+        final List<PortadorEntity> entities = List.of(entity, entity);
+
+        when(portadorRepository.findAll()).thenReturn(entities);
+        List<PortadorResponse> portadorResponses = portadorService.getAllPortadoresBy(null);
+
+        assertEquals(entities.size() , portadorResponses.size());
+    }
+
+    @Test
+    void deve_retornar_uma_lista_de_portadores_com_status_ativo() {
+        final Status status = Status.ATIVO;
+        final PortadorEntity entity1 = PortadorEntity.builder().status(Status.ATIVO).build();
+        final PortadorEntity entity2 = PortadorEntity.builder().status(Status.ATIVO).build();
+
+        when(portadorRepository.getAllPortadoresByStatus(statusArgumentCaptor.capture())).thenReturn(List.of(entity1, entity2));
+        List<PortadorResponse> portadorResponses = portadorService.getAllPortadoresBy(status);
+
+        assertEquals(status, statusArgumentCaptor.getValue());
+        assertEquals(2 , portadorResponses.size());
     }
 }

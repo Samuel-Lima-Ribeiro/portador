@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS PORTADOR (
     id_portador uuid NOT NULL,
-    status VARCHAR(8),
+    status VARCHAR(12),
     limite NUMERIC(10,2),
 --    cliente_id uuid unique,
     cliente_id uuid,

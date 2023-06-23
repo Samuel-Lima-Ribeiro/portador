@@ -30,6 +30,6 @@ public class PortadorController {
 
     @GetMapping
     public List<PortadorResponse> getAllPortadores(@RequestParam(value = "status", required = false)Status status) {
-        return portadorService.getAllPortadores(status);
+        return portadorService.getAllPortadoresBy(status);
     }
 }
