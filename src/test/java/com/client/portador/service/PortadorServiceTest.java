@@ -12,6 +12,7 @@ import com.client.portador.apicreditanalysis.dto.CreditAnalysisDto;
 import com.client.portador.controller.request.PortadorRequest;
 import com.client.portador.controller.response.PortadorResponse;
 import com.client.portador.exception.CardHolderAlreadyExistException;
+import com.client.portador.exception.CardHolderNotFoundException;
 import com.client.portador.exception.ClientInvalidException;
 import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
@@ -56,12 +57,15 @@ class PortadorServiceTest {
     private PortadorResponseMapper portadorResponseMapper = new PortadorResponseMapperImpl();
     @InjectMocks
     private PortadorService portadorService;
+    private static final UUID ID = UUID.fromString("438b2f95-4560-415b-98c2-9770cc1c4d93");
     @Captor
     private ArgumentCaptor<UUID> creditAnalysisIdArgumentCaptor;
     @Captor
     private ArgumentCaptor<PortadorEntity> portadorEntityArgumentCaptor;
     @Captor
     private ArgumentCaptor<Status> statusArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> portadorIdArgumentCaptor;
 
     public static CreditAnalysisDto creditAnalysisDtoFactory() {
         return CreditAnalysisDto.builder()
@@ -201,5 +205,28 @@ class PortadorServiceTest {
 
         assertEquals(status, statusArgumentCaptor.getValue());
         assertEquals(2 , portadorResponses.size());
+    }
+
+    @Test
+    void deve_lancar_CardHolderNotFoundException_quando_consultar_um_portador_com_id_inexistente() {
+        when(portadorRepository.findById(portadorIdArgumentCaptor.capture())).thenReturn(Optional.empty());
+
+        CardHolderNotFoundException exception = assertThrows(CardHolderNotFoundException.class ,
+                () -> portadorService.getPortadorById(ID));
+
+        assertEquals("Portador do id %s não encontrado".formatted(ID) , exception.getMessage());
+    }
+
+    @Test
+    void deve_retornar_um_portador_quando_consultado_por_um_id_existente() {
+        final PortadorEntity entity = portadorEntityFactory();
+        when(portadorRepository.findById(portadorIdArgumentCaptor.capture())).thenReturn(Optional.ofNullable(entity));
+
+        final PortadorResponse response = portadorService.getPortadorById(ID);
+
+        assertEquals(ID, portadorIdArgumentCaptor.getValue());
+        assertEquals(entity.getLimit(), response.limit());
+        assertEquals(entity.getStatus().name(), response.status());
+        assertEquals(entity.getCreatedAt(), response.createdAt());
     }
 }

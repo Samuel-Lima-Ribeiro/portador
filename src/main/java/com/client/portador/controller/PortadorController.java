@@ -5,9 +5,11 @@ import com.client.portador.controller.response.PortadorResponse;
 import com.client.portador.service.PortadorService;
 import com.client.portador.utils.Status;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +33,10 @@ public class PortadorController {
     @GetMapping
     public List<PortadorResponse> getAllPortadores(@RequestParam(value = "status", required = false)Status status) {
         return portadorService.getAllPortadoresBy(status);
+    }
+
+    @GetMapping(path = "/{id}")
+    public PortadorResponse getPortador(@PathVariable(value = "id")UUID id) {
+        return portadorService.getPortadorById(id);
     }
 }

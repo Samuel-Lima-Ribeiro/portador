@@ -5,6 +5,7 @@ import com.client.portador.apicreditanalysis.dto.CreditAnalysisDto;
 import com.client.portador.controller.request.PortadorRequest;
 import com.client.portador.controller.response.PortadorResponse;
 import com.client.portador.exception.CardHolderAlreadyExistException;
+import com.client.portador.exception.CardHolderNotFoundException;
 import com.client.portador.exception.ClientInvalidException;
 import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
@@ -16,6 +17,7 @@ import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.PortadorEntity;
 import com.client.portador.utils.Status;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -81,5 +83,13 @@ public class PortadorService {
         return portadorEntities.stream()
                 .map(portadorResponseMapper::from)
                 .collect(Collectors.toList());
+    }
+
+    public PortadorResponse getPortadorById(UUID id) {
+        final PortadorEntity portadorEntity = portadorRepository.findById(id).orElseThrow(
+                () -> new CardHolderNotFoundException("Portador do id %s não encontrado".formatted(id))
+        );
+
+        return portadorResponseMapper.from(portadorEntity);
     }
 }

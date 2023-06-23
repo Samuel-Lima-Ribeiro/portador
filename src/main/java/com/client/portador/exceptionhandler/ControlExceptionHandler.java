@@ -1,6 +1,7 @@
 package com.client.portador.exceptionhandler;
 
 import com.client.portador.exception.CardHolderAlreadyExistException;
+import com.client.portador.exception.CardHolderNotFoundException;
 import com.client.portador.exception.ClientInvalidException;
 import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
@@ -65,6 +66,16 @@ public class ControlExceptionHandler {
         problemDetail.setType(URI.create("https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Status/400"));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getConstraintViolations().toString());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CardHolderNotFoundException.class)
+    public ProblemDetail cardHolderNotFoundHandleException(CardHolderNotFoundException exception) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle("Portador não encontrado");
+        problemDetail.setType(URI.create(NOT_FOUND));
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getMessage());
         return problemDetail;
     }
 }
