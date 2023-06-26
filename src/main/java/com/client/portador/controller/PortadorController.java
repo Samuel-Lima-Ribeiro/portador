@@ -1,7 +1,10 @@
 package com.client.portador.controller;
 
+import com.client.portador.controller.request.CardRequest;
 import com.client.portador.controller.request.PortadorRequest;
+import com.client.portador.controller.response.CardResponse;
 import com.client.portador.controller.response.PortadorResponse;
+import com.client.portador.service.CardService;
 import com.client.portador.service.PortadorService;
 import com.client.portador.utils.Status;
 import java.util.List;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PortadorController {
 
     private final PortadorService portadorService;
+    private final CardService cardService;
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
@@ -38,5 +42,10 @@ public class PortadorController {
     @GetMapping(path = "/{id}")
     public PortadorResponse getPortador(@PathVariable(value = "id")UUID id) {
         return portadorService.getPortadorById(id);
+    }
+
+    @PostMapping(path = "/{cardHolderId}/cards")
+    public CardResponse createCard(@PathVariable(value = "cardHolderId") UUID cardHolderId, @RequestBody CardRequest cardRequest) {
+        return cardService.criarCartao(cardHolderId, cardRequest);
     }
 }
