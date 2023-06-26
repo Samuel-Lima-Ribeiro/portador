@@ -4,6 +4,10 @@ import com.client.portador.controller.request.CardRequest;
 import com.client.portador.controller.response.CardResponse;
 import com.client.portador.exception.CardHolderNotFoundException;
 import com.client.portador.exception.LimitInvalidException;
+import com.client.portador.mapper.CardEntityMapper;
+import com.client.portador.mapper.CardMapper;
+import com.client.portador.mapper.CardResponseMapper;
+import com.client.portador.model.Card;
 import com.client.portador.repository.CardRepository;
 import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.CardEntity;
@@ -19,6 +23,9 @@ import org.springframework.stereotype.Service;
 public class CardService {
     private final PortadorRepository portadorRepository;
     private final CardRepository cardRepository;
+    private final CardMapper cardMapper;
+    private final CardEntityMapper cardEntityMapper;
+    private final CardResponseMapper cardResponseMapper;
 
     public CardResponse criarCartao(UUID idPortador, CardRequest cardRequest) {
         final BigDecimal limiteCartaoSolicitado = cardRequest.limit();
@@ -26,8 +33,19 @@ public class CardService {
         final BigDecimal limitePortador = checarPortador(idPortador, limiteCartaoSolicitado);
 
         calcularLimiteUsado(idPortador, limiteCartaoSolicitado, limitePortador);
+
+        final Card card = cardMapper.from(cardRequest);
+
+        // fazer criacao de cartao(mudar o nome) e passo o id
+        final Card cardUpdate = card.updateIdPortador(idPortador);
+
+        final CardEntity cardEntity = cardEntityMapper.from(cardUpdate);
+
+        System.out.println(cardUpdate);
+
+        cardRepository.save(cardEntity);
         // aq
-        return null;
+        return cardResponseMapper.from(cardEntity);
     }
 
     public BigDecimal checarPortador(UUID idPortador, BigDecimal limiteSolicitadoCartao) {

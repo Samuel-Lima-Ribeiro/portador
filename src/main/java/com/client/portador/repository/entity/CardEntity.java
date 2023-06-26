@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -20,11 +20,20 @@ public class CardEntity {
     BigDecimal limit;
     String cardNumber;
     Integer cvv;
-    LocalDateTime dueDate;
+    LocalDate dueDate;
     @Column(name = "portador_id")
     UUID idPortador;
 
     private CardEntity() {
+    }
+
+    public CardEntity(BigDecimal limit, String cardNumber, Integer cvv, LocalDate dueDate, UUID idPortador) {
+        this.cardId = UUID.randomUUID();
+        this.limit = limit;
+        this.cardNumber = cardNumber;
+        this.cvv = cvv;
+        this.dueDate = dueDate;
+        this.idPortador = idPortador;
     }
 
     public UUID getCardId() {
@@ -39,7 +48,7 @@ public class CardEntity {
         return cvv;
     }
 
-    public LocalDateTime getDueDate() {
+    public LocalDate getDueDate() {
         return dueDate;
     }
 
