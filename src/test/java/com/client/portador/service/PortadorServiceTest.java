@@ -27,6 +27,7 @@ import com.client.portador.repository.entity.BankAccountEntity;
 import com.client.portador.repository.entity.PortadorEntity;
 import com.client.portador.utils.Status;
 import jakarta.persistence.Entity;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -71,7 +72,7 @@ class PortadorServiceTest {
         return CreditAnalysisDto.builder()
                 .id(UUID.fromString("20260876-eead-4bb0-8ec6-8f9d0f2596eb"))
                 .clientId(UUID.fromString("93e6b252-b810-427c-a489-58760ab51f97"))
-                .approvedLimit(100.00)
+                .approvedLimit(BigDecimal.valueOf(100.00))
                 .approved(true)
                 .build();
     }
@@ -89,7 +90,7 @@ class PortadorServiceTest {
     public static PortadorEntity portadorEntityFactory() {
         return PortadorEntity.builder()
                 .status(Status.ATIVO)
-                .limit(100.00)
+                .limit(BigDecimal.valueOf(100.00))
                 .bankAccount(BankAccountEntity.builder()
                         .account("111111-1")
                         .agency("1111")
@@ -118,7 +119,7 @@ class PortadorServiceTest {
         CreditAnalysisDto dto = CreditAnalysisDto.builder()
                 .id(UUID.fromString("20260876-eead-4bb0-8ec6-8f9d0f2596eb"))
                 .clientId(UUID.fromString("30e0853d-4dde-49e3-baea-db0f1606b8ad"))
-                .approvedLimit(100.00)
+                .approvedLimit(BigDecimal.valueOf(100.00))
                 .approved(true)
                 .build();
         when(apiCreditAnalysis.getCreditAnalysis(creditAnalysisIdArgumentCaptor.capture())).thenReturn(dto);
@@ -136,7 +137,7 @@ class PortadorServiceTest {
         CreditAnalysisDto dto = CreditAnalysisDto.builder()
                 .id(UUID.fromString("20260876-eead-4bb0-8ec6-8f9d0f2596eb"))
                 .clientId(UUID.fromString("93e6b252-b810-427c-a489-58760ab51f97"))
-                .approvedLimit(100.00)
+                .approvedLimit(BigDecimal.valueOf(100.00))
                 .approved(false)
                 .build();
         when(apiCreditAnalysis.getCreditAnalysis(creditAnalysisIdArgumentCaptor.capture())).thenReturn(dto);

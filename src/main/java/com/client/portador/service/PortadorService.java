@@ -16,6 +16,7 @@ import com.client.portador.model.Portador;
 import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.PortadorEntity;
 import com.client.portador.utils.Status;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ public class PortadorService {
     private final PortadorResponseMapper portadorResponseMapper;
 
     public PortadorResponse criarPortador(PortadorRequest portadorRequest) {
-        final Double limite = checarAnaliseCredito(portadorRequest);
+        final BigDecimal limite = checarAnaliseCredito(portadorRequest);
 
         final Portador portador = portadorMapper.from(portadorRequest);
 
@@ -57,7 +58,7 @@ public class PortadorService {
         return portadorSalvado;
     }
 
-    public Double checarAnaliseCredito(PortadorRequest portador) {
+    public BigDecimal checarAnaliseCredito(PortadorRequest portador) {
         final CreditAnalysisDto dto = apiCreditAnalysis.getCreditAnalysis(portador.creditAnalysisId());
 
         if (dto.id() == null) {

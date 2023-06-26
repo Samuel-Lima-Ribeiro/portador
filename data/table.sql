@@ -24,3 +24,17 @@ CREATE TABLE IF NOT EXISTS CONTA_BANCARIA (
 ALTER TABLE portador
 ADD CONSTRAINT fk_conta_bancaria_id
 FOREIGN KEY(conta_bancaria_id) REFERENCES CONTA_BANCARIA (id);
+
+CREATE TABLE IF NOT EXISTS CARTAO (
+    id uuid NOT NULL,
+    limite NUMERIC(10,2),
+    card_number varchar(50),
+    cvv varchar(100),
+    due_date date,
+    portador_id uuid,
+    PRIMARY KEY(id)
+);
+
+ALTER TABLE CARTAO
+ADD CONSTRAINT fk_portador_id
+FOREIGN KEY(portador_id) REFERENCES PORTADOR (id_portador);

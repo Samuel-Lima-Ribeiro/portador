@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -29,7 +30,7 @@ public class PortadorEntity {
     Status status;
 
     @Column(name = "limite")
-    Double limit;
+    BigDecimal limit;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "conta_bancaria_id", referencedColumnName = "id")
@@ -53,7 +54,7 @@ public class PortadorEntity {
     }
 
     @Builder(toBuilder = true)
-    public PortadorEntity(Status status, Double limit, UUID clientId, UUID creditAnalysisId, BankAccountEntity bankAccount) {
+    public PortadorEntity(Status status, BigDecimal limit, UUID clientId, UUID creditAnalysisId, BankAccountEntity bankAccount) {
         this.id = UUID.randomUUID();
         this.status = status;
         this.clientId = clientId;
@@ -76,7 +77,7 @@ public class PortadorEntity {
         return status;
     }
 
-    public Double getLimit() {
+    public BigDecimal getLimit() {
         return limit;
     }
 
