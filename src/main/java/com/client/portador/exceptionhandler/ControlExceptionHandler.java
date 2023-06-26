@@ -5,6 +5,7 @@ import com.client.portador.exception.CardHolderNotFoundException;
 import com.client.portador.exception.ClientInvalidException;
 import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
+import com.client.portador.exception.LimitInvalidException;
 import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -74,6 +75,16 @@ public class ControlExceptionHandler {
         final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         problemDetail.setTitle("Portador não encontrado");
         problemDetail.setType(URI.create(NOT_FOUND));
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getMessage());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(LimitInvalidException.class)
+    public ProblemDetail limitInvalidExceptionHandleException(LimitInvalidException exception) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        problemDetail.setTitle("Limite inválido para criação do cartão");
+        problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
         return problemDetail;

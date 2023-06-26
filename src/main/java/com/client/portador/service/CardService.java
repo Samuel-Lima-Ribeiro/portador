@@ -3,6 +3,7 @@ package com.client.portador.service;
 import com.client.portador.controller.request.CardRequest;
 import com.client.portador.controller.response.CardResponse;
 import com.client.portador.exception.CardHolderNotFoundException;
+import com.client.portador.exception.LimitInvalidException;
 import com.client.portador.repository.CardRepository;
 import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.CardEntity;
@@ -20,37 +21,43 @@ public class CardService {
     private final CardRepository cardRepository;
 
     public CardResponse criarCartao(UUID idPortador, CardRequest cardRequest) {
+        final BigDecimal limiteCartaoSolicitado = cardRequest.limit();
+
+        final BigDecimal limitePortador = checarPortador(idPortador, limiteCartaoSolicitado);
+
+        calcularLimiteUsado(idPortador, limiteCartaoSolicitado, limitePortador);
         // aq
-        System.out.println("Id " + idPortador);
-        // aq
-        System.out.println("cardRequest " + cardRequest);
-        final BigDecimal limitePortador = checarPortador(idPortador);
-        // aq
-        System.out.println("limite " + limitePortador);
-        //aq
-        calcularLimiteUsado(idPortador);
         return null;
     }
 
-    public BigDecimal checarPortador(UUID idPortador) {
+    public BigDecimal checarPortador(UUID idPortador, BigDecimal limiteSolicitadoCartao) {
         final PortadorEntity portadorEntity = portadorRepository.findById(idPortador).orElseThrow(() ->
                 new CardHolderNotFoundException("Portador do id %s não encontrado".formatted(idPortador)));
-        return portadorEntity.getLimit();
+
+        final BigDecimal limitePortador = portadorEntity.getLimit();
+
+        final Integer verificandoLimiteCartao = limiteSolicitadoCartao.compareTo(limitePortador);
+
+        if (verificandoLimiteCartao > 0) {
+            throw new LimitInvalidException("Limite solicitado ultrapassa limite do portador");
+        }
+
+        return limitePortador;
     }
 
-    // aq
-    // mudar o nome para verificarLimteUsado, ai já lanço a exceção que o limite ultrapassa
-    // tirar o return, creio q n precise
-    public BigDecimal calcularLimiteUsado(UUID idPortador) {
+    public void calcularLimiteUsado(UUID idPortador, BigDecimal limiteCartaoSolicitado, BigDecimal limitePortador) {
         final List<CardEntity> cardEntities = cardRepository.findByIdPortador(idPortador);
 
         final BigDecimal limiteUsado = cardEntities.stream()
                 .map(CardEntity::getLimit)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(limiteCartaoSolicitado, BigDecimal::add);
 
-        // aq
+        final Integer verificandoLimiteUsado = limiteUsado.compareTo(limitePortador);
+
+        if (verificandoLimiteUsado > 0) {
+            throw new LimitInvalidException("Soma dos limites de cartões ultrapassa limite do portador");
+        }
+
         System.out.println("Teu limite " + limiteUsado);
-
-        return null;
     }
 }
