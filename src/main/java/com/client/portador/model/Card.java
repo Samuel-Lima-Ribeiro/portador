@@ -45,13 +45,7 @@ public record Card(
             sequencia.append(ThreadLocalRandom.current().nextInt(0, MAXIMO_NUMERO_ALEATORIO));
         }
 
-        // aq
-        System.out.println("gerou isso dai " + sequencia);
-
         sequencia.reverse();
-
-        // aq
-        System.out.println("gerou isso dai inverso " + sequencia);
 
         for (int x = 0; x < sequencia.length(); x++) {
             Integer numeroAtual = Character.getNumericValue(sequencia.charAt(x));
@@ -72,23 +66,23 @@ public record Card(
 
         sequencia.append(digitoVerificador);
 
-        // aq
-        System.out.println("Soma deu " + somaNumeros);
-        // aq
-        System.out.println("Número verificador " + digitoVerificador);
-
         return String.valueOf(sequencia);
     }
 
-    public Card updateIdPortador(UUID idPortador) {
+    private Integer geradorCvv() {
+        final Integer cvv = ThreadLocalRandom.current().nextInt(100, 1000);
+        return cvv;
+    }
+
+    public Card gerarInformacoesCartao(UUID idPortador) {
         final LocalDate dataValidade = criarValidadeCartao();
         final String numeroCartao = geradorNumeroCartao();
-        final Integer cvvGerado = 2;
+        final Integer cvvGerado = geradorCvv();
 
         return this.toBuilder()
                 .idPortador(idPortador)
                 .cvv(cvvGerado)
-                .cardNumber(numeroCartao)
+                .cardNumber(numeroCartao.replaceAll(".{4}(?!$)", "$0 "))
                 .dueDate(dataValidade)
                 .build();
     }

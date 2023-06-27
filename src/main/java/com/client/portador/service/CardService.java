@@ -36,19 +36,16 @@ public class CardService {
 
         final Card card = cardMapper.from(cardRequest);
 
-        // fazer criacao de cartao(mudar o nome) e passo o id
-        final Card cardUpdate = card.updateIdPortador(idPortador);
+        final Card cardUpdate = card.gerarInformacoesCartao(idPortador);
 
         final CardEntity cardEntity = cardEntityMapper.from(cardUpdate);
 
-        System.out.println(cardUpdate);
+        final CardEntity cardEntitySalvo = cardRepository.save(cardEntity);
 
-        cardRepository.save(cardEntity);
-        // aq
-        return cardResponseMapper.from(cardEntity);
+        return cardResponseMapper.from(cardEntitySalvo);
     }
 
-    public BigDecimal checarPortador(UUID idPortador, BigDecimal limiteSolicitadoCartao) {
+    private BigDecimal checarPortador(UUID idPortador, BigDecimal limiteSolicitadoCartao) {
         final PortadorEntity portadorEntity = portadorRepository.findById(idPortador).orElseThrow(() ->
                 new CardHolderNotFoundException("Portador do id %s não encontrado".formatted(idPortador)));
 
@@ -63,7 +60,7 @@ public class CardService {
         return limitePortador;
     }
 
-    public void calcularLimiteUsado(UUID idPortador, BigDecimal limiteCartaoSolicitado, BigDecimal limitePortador) {
+    private void calcularLimiteUsado(UUID idPortador, BigDecimal limiteCartaoSolicitado, BigDecimal limitePortador) {
         final List<CardEntity> cardEntities = cardRepository.findByIdPortador(idPortador);
 
         final BigDecimal limiteUsado = cardEntities.stream()
@@ -75,7 +72,5 @@ public class CardService {
         if (verificandoLimiteUsado > 0) {
             throw new LimitInvalidException("Soma dos limites de cartões ultrapassa limite do portador");
         }
-
-        System.out.println("Teu limite " + limiteUsado);
     }
 }

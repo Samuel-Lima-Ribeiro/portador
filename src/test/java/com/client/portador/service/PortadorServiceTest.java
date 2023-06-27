@@ -47,9 +47,9 @@ import org.springframework.dao.DuplicateKeyException;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PortadorServiceTest {
     @Mock
-    PortadorRepository portadorRepository;
+    private PortadorRepository portadorRepository;
     @Mock
-    ApiCreditAnalysis apiCreditAnalysis;
+    private ApiCreditAnalysis apiCreditAnalysis;
     @Spy
     private PortadorEntityMapper portadorEntityMapper = new PortadorEntityMapperImpl();
     @Spy
@@ -115,8 +115,8 @@ class PortadorServiceTest {
 
     @Test
     void deve_lancar_clientInvalidException_ao_consultar_analise_de_credito_e_id_do_cliente_estiver_diferente_do_id_da_request() {
-        PortadorRequest portadorRequest = portadorRequestFactory();
-        CreditAnalysisDto dto = CreditAnalysisDto.builder()
+        final PortadorRequest portadorRequest = portadorRequestFactory();
+        final CreditAnalysisDto dto = CreditAnalysisDto.builder()
                 .id(UUID.fromString("20260876-eead-4bb0-8ec6-8f9d0f2596eb"))
                 .clientId(UUID.fromString("30e0853d-4dde-49e3-baea-db0f1606b8ad"))
                 .approvedLimit(BigDecimal.valueOf(100.00))
@@ -133,8 +133,8 @@ class PortadorServiceTest {
 
     @Test
     void deve_lancar_CreditAnalysisDeniedException_ao_consultar_analise_de_credito_e_aprovado_estiver_como_false() {
-        PortadorRequest portadorRequest = portadorRequestFactory();
-        CreditAnalysisDto dto = CreditAnalysisDto.builder()
+        final PortadorRequest portadorRequest = portadorRequestFactory();
+        final CreditAnalysisDto dto = CreditAnalysisDto.builder()
                 .id(UUID.fromString("20260876-eead-4bb0-8ec6-8f9d0f2596eb"))
                 .clientId(UUID.fromString("93e6b252-b810-427c-a489-58760ab51f97"))
                 .approvedLimit(BigDecimal.valueOf(100.00))
@@ -190,7 +190,7 @@ class PortadorServiceTest {
         final List<PortadorEntity> entities = List.of(entity, entity);
 
         when(portadorRepository.findAll()).thenReturn(entities);
-        List<PortadorResponse> portadorResponses = portadorService.getAllPortadoresBy(null);
+        final List<PortadorResponse> portadorResponses = portadorService.getAllPortadoresBy(null);
 
         assertEquals(entities.size() , portadorResponses.size());
     }
@@ -202,7 +202,7 @@ class PortadorServiceTest {
         final PortadorEntity entity2 = PortadorEntity.builder().status(Status.ATIVO).build();
 
         when(portadorRepository.getAllPortadoresByStatus(statusArgumentCaptor.capture())).thenReturn(List.of(entity1, entity2));
-        List<PortadorResponse> portadorResponses = portadorService.getAllPortadoresBy(status);
+        final List<PortadorResponse> portadorResponses = portadorService.getAllPortadoresBy(status);
 
         assertEquals(status, statusArgumentCaptor.getValue());
         assertEquals(2 , portadorResponses.size());
@@ -212,7 +212,7 @@ class PortadorServiceTest {
     void deve_lancar_CardHolderNotFoundException_quando_consultar_um_portador_com_id_inexistente() {
         when(portadorRepository.findById(portadorIdArgumentCaptor.capture())).thenReturn(Optional.empty());
 
-        CardHolderNotFoundException exception = assertThrows(CardHolderNotFoundException.class ,
+        final CardHolderNotFoundException exception = assertThrows(CardHolderNotFoundException.class ,
                 () -> portadorService.getPortadorById(ID));
 
         assertEquals("Portador do id %s não encontrado".formatted(ID) , exception.getMessage());

@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.Builder;
 
 @Entity
 @Table(name = "CARTAO")
@@ -14,8 +15,6 @@ public class CardEntity {
     @Id
     @Column(name = "id")
     UUID cardId;
-    // aq
-    // mudar a referencia para limite
     @Column(name = "limite")
     BigDecimal limit;
     String cardNumber;
@@ -27,6 +26,7 @@ public class CardEntity {
     private CardEntity() {
     }
 
+    @Builder
     public CardEntity(BigDecimal limit, String cardNumber, Integer cvv, LocalDate dueDate, UUID idPortador) {
         this.cardId = UUID.randomUUID();
         this.limit = limit;

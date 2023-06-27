@@ -48,7 +48,7 @@ public class PortadorService {
         return portadorResponseMapper.from(portadorSalvado);
     }
 
-    public PortadorEntity savePortador(PortadorEntity portadorEntity) {
+    private PortadorEntity savePortador(PortadorEntity portadorEntity) {
         final PortadorEntity portadorSalvado;
         try {
             portadorSalvado = portadorRepository.save(portadorEntity);
@@ -58,7 +58,7 @@ public class PortadorService {
         return portadorSalvado;
     }
 
-    public BigDecimal checarAnaliseCredito(PortadorRequest portador) {
+    private BigDecimal checarAnaliseCredito(PortadorRequest portador) {
         final CreditAnalysisDto dto = apiCreditAnalysis.getCreditAnalysis(portador.creditAnalysisId());
 
         if (dto.id() == null) {
