@@ -142,6 +142,16 @@ class CardServiceTest {
         assertNotNull(cardResponse.cardId());
         assertNotNull(cardResponse.cardNumber());
         assertNotNull(cardResponse.cvv());
+    }
 
+    @Test
+    void deve_buscar_todos_cartoes_de_um_portador() {
+        final CardEntity cardEntity = cardEntityFactory();
+        when(cardRepository.findByIdPortador(portadorIdArgumentCaptor.capture())).thenReturn(List.of(cardEntity, cardEntity));
+
+        final List<CardResponse> cardResponses = cardService.getAllCardByPortador(ID_PORTADOR);
+
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals(2 , cardResponses.size());
     }
 }
