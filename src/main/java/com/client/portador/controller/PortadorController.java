@@ -48,4 +48,9 @@ public class PortadorController {
     public CardResponse createCard(@PathVariable(value = "cardHolderId") UUID cardHolderId, @RequestBody CardRequest cardRequest) {
         return cardService.criarCartao(cardHolderId, cardRequest);
     }
+
+    @GetMapping(path = "/{cardHolderId}/cards")
+    public List<CardResponse> getAllCardByPortador(@PathVariable(value = "cardHolderId") UUID cardHolderId) {
+        return cardService.getAllCardByPortador(cardHolderId);
+    }
 }

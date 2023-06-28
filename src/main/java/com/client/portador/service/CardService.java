@@ -15,6 +15,7 @@ import com.client.portador.repository.entity.PortadorEntity;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -72,5 +73,13 @@ public class CardService {
         if (verificandoLimiteUsado > 0) {
             throw new LimitInvalidException("Soma dos limites de cartões ultrapassa limite do portador");
         }
+    }
+
+    public List<CardResponse> getAllCardByPortador(UUID idPortador) {
+        final List<CardEntity> cardEntities = cardRepository.findByIdPortador(idPortador);
+
+        return cardEntities.stream()
+                .map(cardResponseMapper::from)
+                .collect(Collectors.toList());
     }
 }
