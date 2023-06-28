@@ -1,11 +1,14 @@
 package com.client.portador.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.client.portador.controller.request.CardRequest;
+import com.client.portador.controller.response.CardResponse;
 import com.client.portador.exception.CardHolderNotFoundException;
 import com.client.portador.exception.LimitInvalidException;
 import com.client.portador.mapper.CardEntityMapper;
@@ -19,6 +22,7 @@ import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.CardEntity;
 import com.client.portador.repository.entity.PortadorEntity;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,9 +53,13 @@ class CardServiceTest {
     @InjectMocks
     private CardService cardService;
 
-    private static final UUID ID = UUID.fromString("438b2f95-4560-415b-98c2-9770cc1c4d93");
+    private static final UUID ID_PORTADOR = UUID.fromString("438b2f95-4560-415b-98c2-9770cc1c4d93");
     @Captor
     private ArgumentCaptor<UUID> portadorIdArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<UUID> cardIdArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<CardEntity> cardEntityArgumentCaptor;
 
     public static CardRequest cardRequestFactory() {
         return CardRequest.builder()
@@ -61,7 +69,7 @@ class CardServiceTest {
 
     public static PortadorEntity portadorEntityFactory() {
         return PortadorEntity.builder()
-                .clientId(ID)
+                .clientId(ID_PORTADOR)
                 .limit(BigDecimal.valueOf(10000.00))
                 .build();
     }
@@ -79,9 +87,9 @@ class CardServiceTest {
         when(portadorRepository.findById(any())).thenReturn(Optional.empty());
 
         final CardHolderNotFoundException exception = assertThrows(CardHolderNotFoundException.class, () ->
-                cardService.criarCartao(ID, cardRequestFactory()));
+                cardService.criarCartao(ID_PORTADOR, cardRequestFactory()));
 
-        assertEquals("Portador do id %s não encontrado".formatted(ID) ,exception.getMessage());
+        assertEquals("Portador do id %s não encontrado".formatted(ID_PORTADOR) ,exception.getMessage());
     }
 
     @Test
@@ -91,7 +99,7 @@ class CardServiceTest {
         when(portadorRepository.findById(any())).thenReturn(Optional.ofNullable(portadorEntityFactory()));
 
         final LimitInvalidException exception = assertThrows(LimitInvalidException.class, () ->
-                cardService.criarCartao(ID, cardRequest));
+                cardService.criarCartao(ID_PORTADOR, cardRequest));
 
         assertEquals("Limite solicitado ultrapassa limite do portador", exception.getMessage());
     }
@@ -104,11 +112,36 @@ class CardServiceTest {
         final CardEntity cardEntity = cardEntityFactory();
 
         when(portadorRepository.findById(any())).thenReturn(Optional.ofNullable(portadorEntityFactory()));
+
         when(cardRepository.findByIdPortador(portadorIdArgumentCaptor.capture())).thenReturn(List.of(cardEntity, cardEntity));
 
         final LimitInvalidException exception = assertThrows(LimitInvalidException.class, () ->
-                cardService.criarCartao(ID, cardRequest));
+                cardService.criarCartao(ID_PORTADOR, cardRequest));
 
         assertEquals("Soma dos limites de cartões ultrapassa limite do portador", exception.getMessage());
+    }
+
+    @Test
+    void deve_criar_um_cartao() {
+        final CardRequest cardRequest = cardRequestFactory();
+
+        final CardEntity cardEntity = cardEntityFactory();
+        when(portadorRepository.findById(portadorIdArgumentCaptor.capture())).thenReturn(Optional.ofNullable(portadorEntityFactory()));
+
+        when(cardRepository.findByIdPortador(portadorIdArgumentCaptor.capture())).thenReturn(List.of(cardEntity, cardEntity));
+
+        when(cardRepository.save(cardEntityArgumentCaptor.capture())).thenReturn(cardEntityFactory());
+
+        final CardResponse cardResponse = cardService.criarCartao(ID_PORTADOR, cardRequest);
+        final CardEntity entitySalvado = cardEntityArgumentCaptor.getValue();
+        final LocalDate agora = LocalDate.now();
+
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals(agora.plusYears(5), entitySalvado.getDueDate());
+
+        assertNotNull(cardResponse.cardId());
+        assertNotNull(cardResponse.cardNumber());
+        assertNotNull(cardResponse.cvv());
+
     }
 }
