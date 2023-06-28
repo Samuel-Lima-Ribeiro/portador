@@ -54,6 +54,7 @@ class CardServiceTest {
     private CardService cardService;
 
     private static final UUID ID_PORTADOR = UUID.fromString("438b2f95-4560-415b-98c2-9770cc1c4d93");
+    private static final UUID ID_CARTAO = UUID.fromString("2ef8d56b-7dac-49b1-a1f8-ee4e0edbb48e");
     @Captor
     private ArgumentCaptor<UUID> portadorIdArgumentCaptor;
     @Captor
@@ -79,6 +80,7 @@ class CardServiceTest {
                 .cardNumber("7620 4019 8165 5884")
                 .limit(BigDecimal.valueOf(1000.00))
                 .cvv(597)
+                .dueDate(LocalDate.parse("2028-07-28"))
                 .build();
     }
 
@@ -153,5 +155,20 @@ class CardServiceTest {
 
         assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
         assertEquals(2 , cardResponses.size());
+    }
+
+    @Test
+    void deve_buscar_por_um_cartao_especifico_do_portador() {
+        when(cardRepository.findByCardIdAndIdPortador(cardIdArgumentCaptor.capture(), portadorIdArgumentCaptor.capture())).thenReturn(cardEntityFactory());
+
+        final CardResponse cardResponse = cardService.getCardById(ID_PORTADOR, ID_CARTAO);
+
+        assertNotNull(cardResponse.cardId());
+        assertNotNull(cardResponse.cardNumber());
+        assertNotNull(cardResponse.cvv());
+        assertNotNull(cardResponse.dueDate());
+
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals(ID_CARTAO, cardIdArgumentCaptor.getValue());
     }
 }
