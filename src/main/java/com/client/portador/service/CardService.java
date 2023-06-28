@@ -82,4 +82,10 @@ public class CardService {
                 .map(cardResponseMapper::from)
                 .collect(Collectors.toList());
     }
+
+    public CardResponse getCardById(UUID idPortador, UUID idCartao) {
+        final CardEntity cardEntity = cardRepository.findByCardIdAndIdPortador(idCartao, idPortador);
+
+        return cardResponseMapper.from(cardEntity);
+    }
 }

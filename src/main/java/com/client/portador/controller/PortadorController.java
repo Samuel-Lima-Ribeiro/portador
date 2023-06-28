@@ -53,4 +53,9 @@ public class PortadorController {
     public List<CardResponse> getAllCardByPortador(@PathVariable(value = "cardHolderId") UUID cardHolderId) {
         return cardService.getAllCardByPortador(cardHolderId);
     }
+
+    @GetMapping(path = "/{cardHolderId}/cards/{id}")
+    public CardResponse getCardById(@PathVariable(value = "cardHolderId") UUID cardHolderId, @PathVariable(value = "id") UUID idCard) {
+        return cardService.getCardById(cardHolderId, idCard);
+    }
 }
