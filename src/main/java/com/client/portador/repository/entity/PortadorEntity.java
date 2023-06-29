@@ -6,6 +6,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -23,6 +25,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Immutable
 public class PortadorEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id_portador")
     UUID id;
 
@@ -43,24 +46,27 @@ public class PortadorEntity {
     UUID creditAnalysisId;
 
     @CreationTimestamp
-    @Column(name = "createdAt")
+    @Column(name = "created_at")
     LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updatedAt")
+    @Column(name = "updated_at")
     LocalDateTime updatedAt;
 
     private PortadorEntity() {
     }
 
     @Builder(toBuilder = true)
-    public PortadorEntity(Status status, BigDecimal limit, UUID clientId, UUID creditAnalysisId, BankAccountEntity bankAccount) {
-        this.id = UUID.randomUUID();
+    public PortadorEntity(UUID id, Status status, BigDecimal limit, BankAccountEntity bankAccount, UUID clientId, UUID creditAnalysisId,
+                          LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
         this.status = status;
-        this.clientId = clientId;
-        this.creditAnalysisId = creditAnalysisId;
         this.limit = limit;
         this.bankAccount = bankAccount;
+        this.clientId = clientId;
+        this.creditAnalysisId = creditAnalysisId;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
     @Override

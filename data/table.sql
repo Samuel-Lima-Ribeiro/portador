@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS CARTAO (
     cvv varchar(100),
     due_date date,
     portador_id uuid,
+    created_at timestamp,
+    updated_at timestamp,
     PRIMARY KEY(id)
 );
 
