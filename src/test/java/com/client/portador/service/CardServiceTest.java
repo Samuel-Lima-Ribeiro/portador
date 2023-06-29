@@ -8,8 +8,10 @@ import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.client.portador.controller.request.CardRequest;
+import com.client.portador.controller.request.LimitUpdateRequest;
 import com.client.portador.controller.response.CardResponse;
 import com.client.portador.exception.CardHolderNotFoundException;
+import com.client.portador.exception.CardNotFoundException;
 import com.client.portador.exception.LimitInvalidException;
 import com.client.portador.mapper.CardEntityMapper;
 import com.client.portador.mapper.CardEntityMapperImpl;
@@ -54,6 +56,7 @@ class CardServiceTest {
     private CardService cardService;
 
     private static final UUID ID_PORTADOR = UUID.fromString("438b2f95-4560-415b-98c2-9770cc1c4d93");
+    private static final UUID ID_CARTAO = UUID.fromString("4eed81f7-e330-4b2d-af4a-44427b982b2f");
     @Captor
     private ArgumentCaptor<UUID> portadorIdArgumentCaptor;
     @Captor
@@ -76,10 +79,16 @@ class CardServiceTest {
 
     public static CardEntity cardEntityFactory() {
         return CardEntity.builder()
-                .cardId(UUID.fromString("4eed81f7-e330-4b2d-af4a-44427b982b2f"))
+                .cardId(ID_CARTAO)
                 .cardNumber("7620 4019 8165 5884")
                 .limit(BigDecimal.valueOf(1000.00))
                 .cvv(597)
+                .build();
+    }
+
+    public static LimitUpdateRequest limitUpdateRequestFactory() {
+        return LimitUpdateRequest.builder()
+                .limit(BigDecimal.valueOf(1000.0))
                 .build();
     }
 
@@ -154,5 +163,30 @@ class CardServiceTest {
 
         assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
         assertEquals(2 , cardResponses.size());
+    }
+
+    @Test
+    void deve_lancar_CardHolderNotFoundException_quando_tentar_aumentar_limite_de_um_cartao_de_um_portador_inexistente() {
+        when(portadorRepository.findById(portadorIdArgumentCaptor.capture())).thenReturn(Optional.empty());
+
+        final CardHolderNotFoundException exception = assertThrows(CardHolderNotFoundException.class,
+                () -> cardService.atualizarLimiteCartao(ID_PORTADOR, ID_CARTAO, limitUpdateRequestFactory()));
+
+        assertEquals("Portador do id %s não encontrado".formatted(ID_PORTADOR), exception.getMessage());
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+    }
+
+    @Test
+    void deve_lancar_CardNotFoundException_quando_tentar_aumentar_limite_de_um_cartao_inexistente() {
+        final PortadorEntity portadorEntity = portadorEntityFactory();
+        when(portadorRepository.findById(portadorIdArgumentCaptor.capture())).thenReturn(Optional.ofNullable(portadorEntity));
+        when(cardRepository.findByCardIdAndIdPortador(cardIdArgumentCaptor.capture(), portadorIdArgumentCaptor.capture())).thenReturn(null);
+
+        final CardNotFoundException exception = assertThrows(CardNotFoundException.class,
+                () -> cardService.atualizarLimiteCartao(ID_PORTADOR, ID_CARTAO, limitUpdateRequestFactory()));
+
+        assertEquals("Cartão do id %s não encontrado".formatted(ID_CARTAO), exception.getMessage());
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals(ID_CARTAO, cardIdArgumentCaptor.getValue());
     }
 }
