@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.client.portador.controller.request.CardRequest;
 import com.client.portador.controller.request.LimitUpdateRequest;
 import com.client.portador.controller.response.CardResponse;
+import com.client.portador.controller.response.LimitUpdateResponse;
 import com.client.portador.exception.CardHolderNotFoundException;
 import com.client.portador.exception.CardNotFoundException;
 import com.client.portador.exception.LimitInvalidException;
@@ -19,6 +20,7 @@ import com.client.portador.mapper.CardMapper;
 import com.client.portador.mapper.CardMapperImpl;
 import com.client.portador.mapper.CardResponseMapper;
 import com.client.portador.mapper.CardResponseMapperImpl;
+import com.client.portador.model.Card;
 import com.client.portador.repository.CardRepository;
 import com.client.portador.repository.PortadorRepository;
 import com.client.portador.repository.entity.CardEntity;
@@ -86,9 +88,24 @@ class CardServiceTest {
                 .build();
     }
 
+    public static CardEntity cardEntityUpdatedFactory() {
+        return CardEntity.builder()
+                .cardId(ID_CARTAO)
+                .cardNumber("7620 4019 8165 5884")
+                .limit(BigDecimal.valueOf(8000.00))
+                .cvv(597)
+                .build();
+    }
+
     public static LimitUpdateRequest limitUpdateRequestFactory() {
         return LimitUpdateRequest.builder()
-                .limit(BigDecimal.valueOf(1000.0))
+                .limit(BigDecimal.valueOf(8000.0))
+                .build();
+    }
+
+    public static LimitUpdateResponse limitUpdateResponseFactory() {
+        return LimitUpdateResponse.builder()
+                .updatedLimit(BigDecimal.valueOf(8000.0))
                 .build();
     }
 
@@ -186,6 +203,44 @@ class CardServiceTest {
                 () -> cardService.atualizarLimiteCartao(ID_PORTADOR, ID_CARTAO, limitUpdateRequestFactory()));
 
         assertEquals("Cartão do id %s não encontrado".formatted(ID_CARTAO), exception.getMessage());
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals(ID_CARTAO, cardIdArgumentCaptor.getValue());
+    }
+
+    @Test
+    void deve_lancar_LimitInvalidException_quando_tentar_aumentar_limite_de_um_cartao_e_exceder_limite_do_portador() {
+        final PortadorEntity portadorEntity = portadorEntityFactory();
+        final CardEntity cardEntity = cardEntityFactory();
+
+        when(portadorRepository.findById(portadorIdArgumentCaptor.capture())).thenReturn(Optional.ofNullable(portadorEntity));
+        when(cardRepository.findByCardIdAndIdPortador(cardIdArgumentCaptor.capture(), portadorIdArgumentCaptor.capture())).thenReturn(cardEntity);
+        when(cardRepository.findByIdPortador(portadorIdArgumentCaptor.capture())).thenReturn(List.of(cardEntity, cardEntity, cardEntity, cardEntity));
+
+        final LimitInvalidException exception = assertThrows(LimitInvalidException.class,
+                () -> cardService.atualizarLimiteCartao(ID_PORTADOR, ID_CARTAO, limitUpdateRequestFactory()));
+
+        assertEquals("Soma dos limites de cartões ultrapassa limite do portador", exception.getMessage());
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals(ID_CARTAO, cardIdArgumentCaptor.getValue());
+    }
+
+    @Test
+    void deve_aumentar_o_limite_de_um_cartao_especifico() {
+        final PortadorEntity portadorEntity = portadorEntityFactory();
+        final CardEntity cardEntity = cardEntityFactory();
+
+        when(portadorRepository.findById(portadorIdArgumentCaptor.capture())).thenReturn(Optional.ofNullable(portadorEntity));
+        when(cardRepository.findByCardIdAndIdPortador(cardIdArgumentCaptor.capture(), portadorIdArgumentCaptor.capture())).thenReturn(cardEntity);
+        when(cardRepository.findByIdPortador(portadorIdArgumentCaptor.capture())).thenReturn(List.of(cardEntity, cardEntity, cardEntity));
+        when(cardRepository.save(cardEntityArgumentCaptor.capture())).thenReturn(cardEntityUpdatedFactory());
+
+        final LimitUpdateResponse limitUpdateResponse = cardService.atualizarLimiteCartao(ID_PORTADOR, ID_CARTAO, limitUpdateRequestFactory());
+
+        final CardEntity cardEntityUpdate = cardEntityArgumentCaptor.getValue();
+
+        assertEquals(cardEntityUpdate.getLimit(), limitUpdateResponse.updatedLimit());
+        assertEquals(cardEntityUpdate.getCardId(), limitUpdateResponse.cardId());
+
         assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
         assertEquals(ID_CARTAO, cardIdArgumentCaptor.getValue());
     }
