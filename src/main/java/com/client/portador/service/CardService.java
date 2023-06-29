@@ -1,8 +1,11 @@
 package com.client.portador.service;
 
 import com.client.portador.controller.request.CardRequest;
+import com.client.portador.controller.request.LimitUpdateRequest;
 import com.client.portador.controller.response.CardResponse;
+import com.client.portador.controller.response.LimitUpdateResponse;
 import com.client.portador.exception.CardHolderNotFoundException;
+import com.client.portador.exception.CardNotFoundException;
 import com.client.portador.exception.LimitInvalidException;
 import com.client.portador.mapper.CardEntityMapper;
 import com.client.portador.mapper.CardMapper;
@@ -87,5 +90,35 @@ public class CardService {
         final CardEntity cardEntity = cardRepository.findByCardIdAndIdPortador(idCartao, idPortador);
 
         return cardResponseMapper.from(cardEntity);
+    }
+
+    public LimitUpdateResponse atualizarLimiteCartao(UUID idPortador, UUID idCartao, LimitUpdateRequest limitUpdateRequest) {
+
+        final PortadorEntity portadorEntity = portadorRepository.findById(idPortador).orElseThrow(
+                () -> new CardHolderNotFoundException("Portador do id %s não encontrado".formatted(idPortador))
+        );
+
+        final CardEntity cardEntity = cardRepository.findByCardIdAndIdPortador(idCartao, idPortador);
+
+        if (cardEntity == null) {
+            throw new CardNotFoundException("Cartão do id %s não encontrado".formatted(idCartao));
+        }
+
+        final BigDecimal limiteRequest = limitUpdateRequest.limit();
+
+        final BigDecimal limiteAtualizado = limiteRequest.subtract(cardEntity.getLimit());
+
+        calcularLimiteUsado(idPortador, limiteAtualizado, portadorEntity.getLimit());
+
+        final CardEntity cardEntityUpdate = cardEntity.toBuilder()
+                .limit(limiteRequest)
+                .build();
+
+        cardRepository.save(cardEntityUpdate);
+
+        return LimitUpdateResponse.builder()
+                .cardId(cardEntityUpdate.getCardId())
+                .updatedLimit(cardEntityUpdate.getLimit())
+                .build();
     }
 }

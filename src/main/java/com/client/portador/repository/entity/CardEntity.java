@@ -2,6 +2,8 @@ package com.client.portador.repository.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
@@ -13,6 +15,7 @@ import lombok.Builder;
 @Table(name = "CARTAO")
 public class CardEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
     UUID cardId;
     @Column(name = "limite")
@@ -26,9 +29,9 @@ public class CardEntity {
     private CardEntity() {
     }
 
-    @Builder
-    public CardEntity(BigDecimal limit, String cardNumber, Integer cvv, LocalDate dueDate, UUID idPortador) {
-        this.cardId = UUID.randomUUID();
+    @Builder(toBuilder = true)
+    public CardEntity(UUID cardId, BigDecimal limit, String cardNumber, Integer cvv, LocalDate dueDate, UUID idPortador) {
+        this.cardId = cardId;
         this.limit = limit;
         this.cardNumber = cardNumber;
         this.cvv = cvv;
@@ -58,5 +61,11 @@ public class CardEntity {
 
     public BigDecimal getLimit() {
         return limit;
+    }
+
+    @Override
+    public String toString() {
+        return "CardEntity{" + "cardId=" + cardId + ", limit=" + limit + ", cardNumber='"
+                + cardNumber + '\'' + ", cvv=" + cvv + ", dueDate=" + dueDate + ", idPortador=" + idPortador + '}';
     }
 }

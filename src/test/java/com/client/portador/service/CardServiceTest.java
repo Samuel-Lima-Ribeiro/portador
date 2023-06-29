@@ -76,6 +76,7 @@ class CardServiceTest {
 
     public static CardEntity cardEntityFactory() {
         return CardEntity.builder()
+                .cardId(UUID.fromString("4eed81f7-e330-4b2d-af4a-44427b982b2f"))
                 .cardNumber("7620 4019 8165 5884")
                 .limit(BigDecimal.valueOf(1000.00))
                 .cvv(597)
