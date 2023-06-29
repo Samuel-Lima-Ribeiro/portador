@@ -31,6 +31,8 @@ public class CardService {
     private final CardEntityMapper cardEntityMapper;
     private final CardResponseMapper cardResponseMapper;
 
+    private static final String MENSAGEM_ERRO_NOT_FOUND_PORTADOR = "Portador do id %s não encontrado";
+
     public CardResponse criarCartao(UUID idPortador, CardRequest cardRequest) {
         final BigDecimal limiteCartaoSolicitado = cardRequest.limit();
 
@@ -51,7 +53,7 @@ public class CardService {
 
     private BigDecimal checarPortador(UUID idPortador, BigDecimal limiteSolicitadoCartao) {
         final PortadorEntity portadorEntity = portadorRepository.findById(idPortador).orElseThrow(() ->
-                new CardHolderNotFoundException("Portador do id %s não encontrado".formatted(idPortador)));
+                new CardHolderNotFoundException(MENSAGEM_ERRO_NOT_FOUND_PORTADOR.formatted(idPortador)));
 
         final BigDecimal limitePortador = portadorEntity.getLimit();
 
@@ -79,6 +81,12 @@ public class CardService {
     }
 
     public List<CardResponse> getAllCardByPortador(UUID idPortador) {
+        final Boolean portadorExiste = portadorRepository.existsById(idPortador);
+
+        if (!portadorExiste) {
+            throw new CardHolderNotFoundException(MENSAGEM_ERRO_NOT_FOUND_PORTADOR.formatted(idPortador));
+        }
+
         final List<CardEntity> cardEntities = cardRepository.findByIdPortador(idPortador);
 
         return cardEntities.stream()
@@ -95,7 +103,7 @@ public class CardService {
     public LimitUpdateResponse atualizarLimiteCartao(UUID idPortador, UUID idCartao, LimitUpdateRequest limitUpdateRequest) {
 
         final PortadorEntity portadorEntity = portadorRepository.findById(idPortador).orElseThrow(
-                () -> new CardHolderNotFoundException("Portador do id %s não encontrado".formatted(idPortador))
+                () -> new CardHolderNotFoundException(MENSAGEM_ERRO_NOT_FOUND_PORTADOR.formatted(idPortador))
         );
 
         final CardEntity cardEntity = cardRepository.findByCardIdAndIdPortador(idCartao, idPortador);
