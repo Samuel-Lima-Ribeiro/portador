@@ -25,13 +25,12 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CardService {
+    private static final String MENSAGEM_ERRO_NOT_FOUND_PORTADOR = "Portador do id %s não encontrado";
     private final PortadorRepository portadorRepository;
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
     private final CardEntityMapper cardEntityMapper;
     private final CardResponseMapper cardResponseMapper;
-
-    private static final String MENSAGEM_ERRO_NOT_FOUND_PORTADOR = "Portador do id %s não encontrado";
 
     public CardResponse criarCartao(UUID idPortador, CardRequest cardRequest) {
         final BigDecimal limiteCartaoSolicitado = cardRequest.limit();
@@ -95,7 +94,17 @@ public class CardService {
     }
 
     public CardResponse getCardById(UUID idPortador, UUID idCartao) {
+        final Boolean portadorExiste = portadorRepository.existsById(idPortador);
+
+        if (!portadorExiste) {
+            throw new CardHolderNotFoundException(MENSAGEM_ERRO_NOT_FOUND_PORTADOR.formatted(idPortador));
+        }
+
         final CardEntity cardEntity = cardRepository.findByCardIdAndIdPortador(idCartao, idPortador);
+
+        if (cardEntity == null) {
+            throw new CardNotFoundException("Cartão do id %s não encontrado".formatted(idCartao));
+        }
 
         return cardResponseMapper.from(cardEntity);
     }
