@@ -20,7 +20,6 @@ public record Portador(
         this.clientId = clientId;
 
         if (bankAccount == null || bankAccount.account() == null && bankAccount.bankCode() == null && bankAccount.agency() == null) {
-            System.out.println("CAIU CAIU CAIU");
             this.bankAccount = null;
         } else {
             this.bankAccount = bankAccount;
