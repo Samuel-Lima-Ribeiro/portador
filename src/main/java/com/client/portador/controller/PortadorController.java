@@ -38,31 +38,37 @@ public class PortadorController {
     }
 
     @GetMapping
+    @ResponseStatus(value = HttpStatus.OK)
     public List<PortadorResponse> getAllPortadores(@RequestParam(value = "status", required = false)Status status) {
         return portadorService.getAllPortadoresBy(status);
     }
 
     @GetMapping(path = "/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
     public PortadorResponse getPortador(@PathVariable(value = "id")UUID id) {
         return portadorService.getPortadorById(id);
     }
 
     @PostMapping(path = "/{cardHolderId}/cards")
+    @ResponseStatus(value = HttpStatus.CREATED)
     public CardResponse createCard(@PathVariable(value = "cardHolderId") UUID cardHolderId, @RequestBody CardRequest cardRequest) {
         return cardService.criarCartao(cardHolderId, cardRequest);
     }
 
     @GetMapping(path = "/{cardHolderId}/cards")
+    @ResponseStatus(value = HttpStatus.OK)
     public List<CardResponse> getAllCardByPortador(@PathVariable(value = "cardHolderId") UUID cardHolderId) {
         return cardService.getAllCardByPortador(cardHolderId);
     }
 
     @GetMapping(path = "/{cardHolderId}/cards/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
     public CardResponse getCardById(@PathVariable(value = "cardHolderId") UUID cardHolderId, @PathVariable(value = "id") UUID idCard) {
         return cardService.getCardById(cardHolderId, idCard);
     }
 
     @PatchMapping(path = "/{cardHolderId}/cards/{id}")
+    @ResponseStatus(value = HttpStatus.OK)
     public LimitUpdateResponse patchlimit(@PathVariable(value = "cardHolderId") UUID cardHolderId, @PathVariable(value = "id") UUID idCard,
                                           @RequestBody LimitUpdateRequest limitUpdateRequest) {
         return cardService.atualizarLimiteCartao(cardHolderId, idCard, limitUpdateRequest);
