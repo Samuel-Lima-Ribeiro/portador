@@ -60,11 +60,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.jacoco</groupId>
-			<artifactId>jacoco-maven-plugin</artifactId>
-			<version>0.8.10</version>
-		</dependency>
 
 	</dependencies>
 	<dependencyManagement>
@@ -141,6 +136,18 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<excludes>
+						<exclude>com/client/portador/mapper/**</exclude>
+						<exclude>com/client/portador/repository/**</exclude>
+						<exclude>com/client/portador/utils/**</exclude>
+						<exclude>com/client/portador/apicreditanalysis/**</exclude>
+						<exclude>com/client/portador/controller/**</exclude>
+						<exclude>com/client/portador/exceptionhandler/**</exclude>
+						<exclude>com/client/portador/exception/**</exclude>
+						<exclude>com/client/portador/PortadorApplication.*</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -24,3 +24,16 @@ spring:
     generate-ddl: false
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          creditAnalysis:
+            connectTimeout: 3000
+            readTimeout: 500
+            loggerLevel: BASIC
+            dismiss404: true
+
+url:
+  creditanalysis.host: localhost:9001/v1.0/credits/analysis
