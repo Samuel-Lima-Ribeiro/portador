@@ -18,7 +18,13 @@ public record Portador(
         this.limit = limit;
         this.creditAnalysisId = creditAnalysisId;
         this.clientId = clientId;
-        this.bankAccount = bankAccount;
+
+        if (bankAccount == null || bankAccount.account() == null && bankAccount.bankCode() == null && bankAccount.agency() == null) {
+            System.out.println("CAIU CAIU CAIU");
+            this.bankAccount = null;
+        } else {
+            this.bankAccount = bankAccount;
+        }
     }
 
     public Portador updateLimiteFrom(BigDecimal limit) {
