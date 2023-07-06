@@ -3,6 +3,7 @@ package com.client.portador.service;
 import com.client.portador.controller.request.CardRequest;
 import com.client.portador.controller.response.CardResponse;
 import com.client.portador.exception.CardHolderNotFoundException;
+import com.client.portador.exception.CardNotFoundException;
 import com.client.portador.exception.LimitInvalidException;
 import com.client.portador.mapper.CardEntityMapper;
 import com.client.portador.mapper.CardMapper;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CardService {
+    private static final String MENSAGEM_ERRO_NOT_FOUND_PORTADOR = "Portador do id %s não encontrado";
     private final PortadorRepository portadorRepository;
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
@@ -84,7 +86,17 @@ public class CardService {
     }
 
     public CardResponse getCardById(UUID idPortador, UUID idCartao) {
+        final Boolean portadorExiste = portadorRepository.existsById(idPortador);
+
+        if (!portadorExiste) {
+            throw new CardHolderNotFoundException(MENSAGEM_ERRO_NOT_FOUND_PORTADOR.formatted(idPortador));
+        }
+
         final CardEntity cardEntity = cardRepository.findByCardIdAndIdPortador(idCartao, idPortador);
+
+        if (cardEntity == null) {
+            throw new CardNotFoundException("Cartão do id %s não encontrado".formatted(idCartao));
+        }
 
         return cardResponseMapper.from(cardEntity);
     }

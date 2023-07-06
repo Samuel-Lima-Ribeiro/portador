@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.client.portador.controller.request.CardRequest;
 import com.client.portador.controller.response.CardResponse;
 import com.client.portador.exception.CardHolderNotFoundException;
+import com.client.portador.exception.CardNotFoundException;
 import com.client.portador.exception.LimitInvalidException;
 import com.client.portador.mapper.CardEntityMapper;
 import com.client.portador.mapper.CardEntityMapperImpl;
@@ -158,17 +159,42 @@ class CardServiceTest {
     }
 
     @Test
-    void deve_buscar_por_um_cartao_especifico_do_portador() {
+    void deve_retornar_CardHolderNotFoundException_ao_pesquisar_por_um_cartao_de_um_portador_inexistente() {
+        when(portadorRepository.existsById(portadorIdArgumentCaptor.capture())).thenReturn(false);
+
+        final CardHolderNotFoundException exception = assertThrows(CardHolderNotFoundException.class,
+                ()-> cardService.getCardById(ID_PORTADOR, ID_CARTAO));
+
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals("Portador do id %s não encontrado".formatted(ID_PORTADOR), exception.getMessage());
+    }
+
+    @Test
+    void deve_retornar_CardNotFoundException_ao_pesquisar_por_um_cartao_de_um_portador_inexistente() {
+        when(portadorRepository.existsById(portadorIdArgumentCaptor.capture())).thenReturn(true);
+        when(cardRepository.findByCardIdAndIdPortador(cardIdArgumentCaptor.capture(), portadorIdArgumentCaptor.capture())).thenReturn(null);
+
+        final CardNotFoundException exception = assertThrows(CardNotFoundException.class,
+                ()-> cardService.getCardById(ID_PORTADOR, ID_CARTAO));
+
+        assertEquals(ID_CARTAO, cardIdArgumentCaptor.getValue());
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals("Cartão do id %s não encontrado".formatted(ID_CARTAO), exception.getMessage());
+    }
+
+    @Test
+    void deve_retornar_um_cartao_especifico() {
+        when(portadorRepository.existsById(portadorIdArgumentCaptor.capture())).thenReturn(true);
         when(cardRepository.findByCardIdAndIdPortador(cardIdArgumentCaptor.capture(), portadorIdArgumentCaptor.capture())).thenReturn(cardEntityFactory());
 
         final CardResponse cardResponse = cardService.getCardById(ID_PORTADOR, ID_CARTAO);
 
+        assertEquals(ID_CARTAO, cardIdArgumentCaptor.getValue());
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+
+        assertNotNull(cardResponse.dueDate());
         assertNotNull(cardResponse.cardId());
         assertNotNull(cardResponse.cardNumber());
         assertNotNull(cardResponse.cvv());
-        assertNotNull(cardResponse.dueDate());
-
-        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
-        assertEquals(ID_CARTAO, cardIdArgumentCaptor.getValue());
     }
 }

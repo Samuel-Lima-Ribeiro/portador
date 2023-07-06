@@ -2,6 +2,7 @@ package com.client.portador.exceptionhandler;
 
 import com.client.portador.exception.CardHolderAlreadyExistException;
 import com.client.portador.exception.CardHolderNotFoundException;
+import com.client.portador.exception.CardNotFoundException;
 import com.client.portador.exception.ClientInvalidException;
 import com.client.portador.exception.CreditAnalysisDeniedException;
 import com.client.portador.exception.CreditAnalysisNotFoundException;
@@ -85,6 +86,16 @@ public class ControlExceptionHandler {
         final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
         problemDetail.setTitle("Limite inválido para criação do cartão");
         problemDetail.setType(URI.create(UNPROCESSABLE_ENTITY));
+        problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
+        problemDetail.setDetail(exception.getMessage());
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CardNotFoundException.class)
+    public ProblemDetail cardNotFoundHandleException(CardNotFoundException exception) {
+        final ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle("Cartão não encontrado");
+        problemDetail.setType(URI.create(NOT_FOUND));
         problemDetail.setProperty(TIMESTAMP, LocalDateTime.now());
         problemDetail.setDetail(exception.getMessage());
         return problemDetail;
