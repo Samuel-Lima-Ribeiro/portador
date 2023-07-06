@@ -76,6 +76,12 @@ public class CardService {
     }
 
     public List<CardResponse> getAllCardByPortador(UUID idPortador) {
+        final Boolean portadorExiste = portadorRepository.existsById(idPortador);
+
+        if (!portadorExiste) {
+            throw new CardHolderNotFoundException("Portador do id %s não encontrado".formatted(idPortador));
+        }
+
         final List<CardEntity> cardEntities = cardRepository.findByIdPortador(idPortador);
 
         return cardEntities.stream()

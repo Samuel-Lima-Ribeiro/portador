@@ -147,11 +147,23 @@ class CardServiceTest {
     @Test
     void deve_buscar_todos_cartoes_de_um_portador() {
         final CardEntity cardEntity = cardEntityFactory();
+        when(portadorRepository.existsById(portadorIdArgumentCaptor.capture())).thenReturn(true);
         when(cardRepository.findByIdPortador(portadorIdArgumentCaptor.capture())).thenReturn(List.of(cardEntity, cardEntity));
 
         final List<CardResponse> cardResponses = cardService.getAllCardByPortador(ID_PORTADOR);
 
         assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
         assertEquals(2 , cardResponses.size());
+    }
+
+    @Test
+    void deve_retornar_CardHolderNotFoundException_ao_pesquisar_todos_os_cartoes_de_um_portador_inexistente() {
+        when(portadorRepository.existsById(portadorIdArgumentCaptor.capture())).thenReturn(false);
+
+        final CardHolderNotFoundException exception = assertThrows(CardHolderNotFoundException.class,
+                ()-> cardService.getAllCardByPortador(ID_PORTADOR));
+
+        assertEquals(ID_PORTADOR, portadorIdArgumentCaptor.getValue());
+        assertEquals("Portador do id %s não encontrado".formatted(ID_PORTADOR), exception.getMessage());
     }
 }
