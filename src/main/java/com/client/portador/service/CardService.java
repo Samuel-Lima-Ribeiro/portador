@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CardService {
+    private static final String MENSAGEM_ERRO_NOT_FOUND_PORTADOR = "Portador do id %s não encontrado";
     private final PortadorRepository portadorRepository;
     private final CardRepository cardRepository;
     private final CardMapper cardMapper;
@@ -79,7 +80,7 @@ public class CardService {
         final Boolean portadorExiste = portadorRepository.existsById(idPortador);
 
         if (!portadorExiste) {
-            throw new CardHolderNotFoundException("Portador do id %s não encontrado".formatted(idPortador));
+            throw new CardHolderNotFoundException(MENSAGEM_ERRO_NOT_FOUND_PORTADOR.formatted(idPortador));
         }
 
         final List<CardEntity> cardEntities = cardRepository.findByIdPortador(idPortador);
